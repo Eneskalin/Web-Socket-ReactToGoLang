@@ -1,0 +1,57 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Demo</title>
+    <style>
+        #state {
+            font-size: 2em;
+            margin-top: 20px;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .on {
+            background-color: green;
+        }
+        .off {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Button State</h1>
+    <div id="state" class="off">Off</div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8080/ws');
+
+        ws.onmessage = function(event) {
+            console.log('Message received:', event.data);
+            const msg = JSON.parse(event.data);
+            const stateDiv = document.getElementById('state');
+            if (msg.state === 1) {
+                stateDiv.innerText = 'On';
+                stateDiv.className = 'on';
+            } else {
+                stateDiv.innerText = 'Off';
+                stateDiv.className = 'off';
+            }
+        };
+
+        ws.onopen = function() {
+            console.log('WebSocket connected');
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket disconnected');
+        };
+
+        ws.onerror = function(error) {
+            console.error('WebSocket Error: ', error);
+        };
+    </script>
+</body>
+</html>

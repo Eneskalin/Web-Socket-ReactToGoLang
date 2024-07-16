@@ -1,41 +1,36 @@
-// WebSocketButton.js
+// src/App.js
 import React, { useState, useEffect } from 'react';
+import WebSocketService from './websocket';
 
 const App = () => {
-  const [ws, setWs] = useState(null);
-  const [buttonState, setButtonState] = useState(0);
+  const [wsService, setWsService] = useState(null);
+  const [status, setStatus] = useState(0);
+  const [serverMessage, setServerMessage] = useState('');
 
   useEffect(() => {
-    const socket = new WebSocket('ws://localhost:8080/ws');
-    socket.onopen = () => {
-      console.log('WebSocket connected');
-      setWs(socket);
-    };
-    socket.onclose = () => {
-      console.log('WebSocket disconnected');
-      setWs(null);
-    };
-    socket.onerror = (error) => {
-      console.error('WebSocket Error: ', error);
-    };
-    return () => socket.close();
+    const webSocketService = new WebSocketService('ws://192.168.9.14:8080');
+    webSocketService.connect((message) => {
+      setServerMessage(message);
+    });
+    setWsService(webSocketService);
   }, []);
 
-  const toggleButtonState = () => {
-    const newState = buttonState === 0 ? 1 : 0;
-    setButtonState(newState);
-    console.log('Sending state:', newState);
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ state: newState }));
-    } else {
-      console.error('WebSocket is not open');
+  const handleClick = () => {
+    const newStatus = status === 0 ? 1 : 0;
+    setStatus(newStatus);
+    if (wsService) {
+      wsService.sendMessage(newStatus.toString());
     }
   };
 
   return (
-    <button onClick={toggleButtonState}>
-      {buttonState === 0 ? 'Turn On' : 'Turn Off'}
-    </button>
+    <div>
+      <h1>WebSocket Client</h1>
+      <button onClick={handleClick}>
+        Send {status === 0 ? '1' : '0'}
+      </button>
+      <p>Server Message: {serverMessage}</p>
+    </div>
   );
 };
 
